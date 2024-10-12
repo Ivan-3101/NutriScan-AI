@@ -5,13 +5,13 @@ import google.generativeai as genai
 from PIL import Image
 import matplotlib.pyplot as plt
 import re
-
+import os 
 # Configuration
-OCR_API_KEY = "K82784981688957"
-GEMINI_API_KEY = "AIzaSyBqjWUIbvOOMErYs_o5V3T4Z0f4Od6jeyY"
+OCR_API_KEY = os.getenv("OCR_API_KEY")
+GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Configure Gemini API
-genai.configure(api_key=GEMINI_API_KEY)
+genai.configure(api_key=GOOGLE_API_KEY)
 
 # Custom CSS to improve the app's appearance
 st.markdown("""

@@ -1,0 +1,11 @@
+streamlit
+requests
+google-generativeai
+Pillow
+matplotlib
+re
+os
+python-dotenv
+plotly
+textblob
+pandas
