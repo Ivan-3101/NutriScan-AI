@@ -1,0 +1,9 @@
+streamlit
+requests
+google-cloud-aiplatform
+Pillow
+matplotlib
+python-dotenv
+plotly
+textblob
+pandas
