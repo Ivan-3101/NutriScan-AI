@@ -1,36 +1,35 @@
 import streamlit as st
-import google.generativeai as genai
 import os
+import requests
 from dotenv import load_dotenv
 import plotly.graph_objects as go
 
 # Load environment variables
 load_dotenv()
-
-# Configure the Gemini API
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+API_URL = os.getenv("FLASK_API_URL", "https://ingredients-api-idgp.onrender.com/assess_ingredient")  # Replace with actual API URL if different
 
 def assess_ingredient_safety(ingredient, quantity):
-    prompt = f"""
-    As a food safety and health expert, analyze the following ingredient and its quantity:
-
-    Ingredient: {ingredient}
-    Quantity: {quantity}
-
-    Based on this information, please provide:
-    1. Whether the quantity is safe for consumption.
-    2. Potential health risks if this quantity is regularly consumed.
-    3. Safe limits for this ingredient and recommended adjustments if needed.
-    """
-    model = genai.GenerativeModel('gemini-pro')
-    response = model.generate_content(prompt)
-    return response.text
+    """Call the Flask API to get the ingredient safety analysis."""
+    try:
+        response = requests.post(
+            API_URL,
+            json={"ingredient": ingredient, "quantity": quantity}
+        )
+        if response.status_code == 200:
+            return response.json().get('prediction', 'No prediction available')
+        else:
+            st.error("API call failed: " + response.json().get('error', 'Unknown error occurred'))
+            return None
+    except Exception as e:
+        st.error(f"Error calling API: {e}")
+        return None
 
 def predict_health_risks(ingredients_with_quantities):
     analysis = []
     for ingredient, quantity in ingredients_with_quantities:
         safety_analysis = assess_ingredient_safety(ingredient, quantity)
-        analysis.append({"ingredient": ingredient, "quantity": quantity, "analysis": safety_analysis})
+        if safety_analysis:
+            analysis.append({"ingredient": ingredient, "quantity": quantity, "analysis": safety_analysis})
     return analysis
 
 def create_safety_chart(analysis):
@@ -44,27 +43,21 @@ def create_safety_chart(analysis):
         yaxis_title="Safety Score (word count)",
         height=400,
         xaxis_tickangle=-45,
-        template='plotly_white'  # Add a clean template
+        template='plotly_white'
     )
     return fig
 
 def main():
-    # st.title("🧪 Ingredient Analysis")
     st.markdown("<hr>", unsafe_allow_html=True)
-
-    # Main input area for food item and ingredients
     food_item = st.text_input("Enter the food item:")
-    
-    # Initialize session state for ingredients
+
     if 'ingredients' not in st.session_state:
         st.session_state.ingredients = []
         st.session_state.quantities = []
 
-    # Ingredient input
     ingredient = st.text_input("Ingredient (e.g., sugar):")
     quantity = st.text_input("Quantity (grams):")  # Direct input for quantity
 
-    # Add ingredient and quantity to the session state
     if st.button("Add Ingredient"):
         if ingredient and quantity:
             st.session_state.ingredients.append(ingredient)
@@ -73,13 +66,11 @@ def main():
         else:
             st.warning("Please enter both ingredient and quantity.")
 
-    # Display added ingredients
     if st.session_state.ingredients:
         st.subheader("📝 Added Ingredients:")
         for ing, qty in zip(st.session_state.ingredients, st.session_state.quantities):
             st.write(f"- {ing}: {qty}")
 
-    # Analyze all ingredients
     if st.button("Analyze All"):
         if food_item and st.session_state.ingredients:
             ingredients_with_quantities = list(zip(st.session_state.ingredients, st.session_state.quantities))
@@ -95,7 +86,6 @@ def main():
             safety_chart = create_safety_chart(analysis)
             st.plotly_chart(safety_chart, use_container_width=True)
 
-    # Add a footer
     st.markdown("<hr>", unsafe_allow_html=True)
     st.markdown("Developed with ❤️ for food safety and health awareness.")
 
