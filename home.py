@@ -11,6 +11,7 @@ import plotly.graph_objects as go
 import requests
 from PIL import Image
 from io import BytesIO
+import zipfile
 
 # Load environment variables
 load_dotenv()
