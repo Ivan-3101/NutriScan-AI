@@ -15,9 +15,6 @@ def main():
     if page == "Ingredient Analysis":
         st.title("🧪 Ingredient Analysis")
         ingredients.main()
-    elif page == "Home":
-        st.title("NutriScan-AI")
-        home.main()
     elif page == "Disease Prediction":
         st.title("🩺 Disease Prediction")
         disease.main()
